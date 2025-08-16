@@ -1,12 +1,12 @@
-from fastapi import FastAPI, WebSocket, Request
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from database import SessionLocal, Message
+import json
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# WebSocket接続リスト
 connections = []
 
 @app.get("/", response_class=HTMLResponse)
@@ -19,15 +19,20 @@ async def websocket_endpoint(websocket: WebSocket):
     connections.append(websocket)
     try:
         while True:
-            data = await websocket.receive_text()
+            data_str = await websocket.receive_text()
+            data = json.loads(data_str)  # {"username": "...", "message": "..."}
+            username = data.get("username", "Guest")
+            message = data.get("message", "")
+
             # DBに保存
             db = SessionLocal()
-            msg = Message(sender="User", content=data)
+            msg = Message(sender=username, content=message)
             db.add(msg)
             db.commit()
             db.close()
+
             # 全員に送信
             for connection in connections:
-                await connection.send_text(f"User: {data}")
-    except:
+                await connection.send_text(json.dumps({"username": username, "message": message}))
+    except WebSocketDisconnect:
         connections.remove(websocket)
