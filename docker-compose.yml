@@ -1,0 +1,15 @@
+services:
+  web:
+    build: .
+    container_name: simple-chat-app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - chat_data:/app/chat_data
+    environment:
+      - TZ=Asia/Tokyo
+    restart: unless-stopped
+
+volumes:
+  chat_data:

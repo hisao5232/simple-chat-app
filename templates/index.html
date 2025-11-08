@@ -65,7 +65,7 @@
         myUsername = usernameInput.value || "Guest";
     });
 
-    const ws = new WebSocket("wss://chat.go-pro-world.net/ws");
+    const ws = new WebSocket(`ws://${window.location.host}/ws`);
 
     ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
