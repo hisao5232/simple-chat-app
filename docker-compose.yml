@@ -7,6 +7,8 @@ services:
     volumes:
       - .:/app
       - chat_data:/app/chat_data
+    env_file:
+      - .env
     environment:
       - TZ=Asia/Tokyo
     restart: unless-stopped
